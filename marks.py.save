@@ -1,0 +1,67 @@
+import schedule
+import time
+import telebot
+from datetime import datetime
+import sqlite3
+import crypto, main
+import logging
+
+bot = telebot.TeleBot('5296800210:AAHCEde6JJpJZoZQpisQylxjXXDR1nMmeGI')
+print('schedule_scrypt запущен')
+
+
+def send():
+    try:
+        sqlite_connection = sqlite3.connect('data.db')
+        cursor = sqlite_connection.cursor()
+        print("Подключен к SQLite")
+
+        sql_select_query = """select id from dict where key = ? and value = ?"""
+        cursor.execute(sql_select_query, ('schedule', '1'))
+        records = cursor.fetchall()
+        answer = []
+        for row in records:
+            # print("Password:", row[2])
+            answer.append(row[0])
+
+        cursor.close()
+
+    except sqlite3.Error as error:
+        print("Ошибка при работе с SQLite", error)
+    finally:
+        if sqlite_connection:
+            sqlite_connection.close()
+            print("Соединение с SQLite закрыто")
+
+    for id in answer:
+        data = main.get_developer_info(id)
+        login = data[0]
+        password = crypto.decode(str(id), data[1], data[2], data[3])
+        marks = main.check_marks(login, password)
+        text = '*Выставлены новые оценки!*\n'
+        for udy in marks:
+            if study != 'average':
+                mark = main.get_dict(id, study)
+                if marks[study]['marks'] == mark:
+                    pass
+                else:
+                    mark_now = marks[study]['marks']
+                    if len(mark_now) > len(mark):
+                        mark_new = mark_now[len(mark):]
+                        print(mark_new)
+                        text += f'_{study.title()}_ - {mark_new}, новый средний балл - *{marks[study]["average_mark"]}*\n'
+                        bot.send_message(id, text, parse_mode='Markdown')
+                        print('Отправлено')
+
+
+schedule.every().day.at("07:30").do(send)
+schedule.every().day.at("09:40").do(send)
+schedule.every().day.at("11:40").do(send)
+schedule.every().day.at("14:15").do(send)
+schedule.every().day.at("17:00").do(send)
+schedule.every().day.at("20:00").do(send)
+
+while True:
+    schedule.run_pending()
+    time.sleep(60)
+
