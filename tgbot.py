@@ -11,7 +11,7 @@ import main, crypto
 
 logging.basicConfig(level=logging.INFO)
 
-bot = telebot.TeleBot('5296800210:AAHCEde6JJpJZoZQpisQylxjXXDR1nMmeGI')
+bot = telebot.TeleBot('')
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 
